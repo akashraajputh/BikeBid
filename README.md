@@ -22,8 +22,11 @@ The root `.env` file configures PostgreSQL for the backend. For a fresh checkout
 
 The local `.env` is ignored by Git. Do not place database passwords or production secrets in tracked files.
 
+<<<<<<< HEAD
 For the configured Aiven database, replace `AIVEN_PASSWORD` in `.env` with the database password. The connection uses the asyncpg driver and requires SSL; URL-encode reserved characters in the password before using it.
 
+=======
+>>>>>>> 11dde1de9443f379090f6b3cb37301db73d0c652
 Install the backend dependencies once:
 
 ```powershell
