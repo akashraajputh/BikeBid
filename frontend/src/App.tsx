@@ -1,7 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { BrowserRouter, Link, Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Gavel, LayoutDashboard, ShieldCheck } from 'lucide-react'
+import { ArrowRight, LayoutDashboard, ShieldCheck } from 'lucide-react'
 
 type User = {
   id: number
@@ -1105,10 +1105,10 @@ function AppShell() {
     <div className="min-h-screen bg-slate-100">
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-2 font-black text-xl text-slate-900">
-            <Gavel className="text-emerald-600" />
-            BikeBid
-          </div>
+          <Link to="/" aria-label="BikeBid home" className="flex items-center gap-2 font-black text-xl text-slate-900">
+            <img src="/images/bikebid-logo.png" alt="" className="h-9 w-12 object-contain" />
+            <span>BikeBid</span>
+          </Link>
           <nav className="hidden gap-6 md:flex">
             <NavLink to="/" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Home</NavLink>
             <NavLink to="/auctions" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Auctions</NavLink>
