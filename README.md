@@ -196,7 +196,7 @@ Set these backend environment variables in Render:
 | `AIVEN_PASSWORD` | The current Aiven password (secret) |
 | `AUTO_CREATE_SCHEMA` | `false` |
 | `SECRET_KEY` | A long, unique random secret |
-| `FRONTEND_URL` | The deployed frontend's exact `https://` origin, without a trailing slash |
+| `FRONTEND_URL` | `https://bikebid.onrender.com` |
 | `ALGORITHM` | `HS256` (optional; this is the application default) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` (optional default) |
 | `REFRESH_TOKEN_EXPIRE_DAYS` | `7` (optional default) |
@@ -217,11 +217,11 @@ Set this frontend environment variable before the build:
 
 | Variable | Value |
 | --- | --- |
-| `VITE_API_BASE_URL` | The backend's public Render URL, e.g. `https://<backend-service>.onrender.com` |
+| `VITE_API_BASE_URL` | `https://bikebidbackend.onrender.com` |
 
 Vite embeds `VITE_*` values into the built client bundle. This URL is public; do not put secrets in `VITE_*` variables. Add a Render rewrite rule for the SPA: source `/*`, destination `/index.html`, action **Rewrite**, so direct navigation to app routes works.
 
-After creating the frontend service, set the backend's `FRONTEND_URL` to the exact Render Static Site origin, then redeploy/restart the backend. If using a custom domain, use that origin instead.
+After creating the frontend service, set the backend's `FRONTEND_URL` to `https://bikebid.onrender.com`, then redeploy/restart the backend. If using a custom domain, use that origin instead.
 
 ### 4. Verify deployment
 
