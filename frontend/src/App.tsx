@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { BrowserRouter, Link, Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRight, Gavel, LayoutDashboard, ShieldCheck } from 'lucide-react'
@@ -141,7 +141,17 @@ function useAuctions() {
   return useQuery({
     queryKey: ['auctions'],
     queryFn: () => apiFetch<Auction[]>('/api/v1/auctions'),
+    refetchInterval: 5000,
+    refetchIntervalInBackground: false,
   })
+}
+
+function formatTimeRemaining(endTime: string, now: number) {
+  const remainingSeconds = Math.max(0, Math.floor((new Date(endTime).getTime() - now) / 1000))
+  if (remainingSeconds === 0) return 'Ended'
+  const hours = Math.floor(remainingSeconds / 3600)
+  const minutes = Math.floor((remainingSeconds % 3600) / 60)
+  return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`
 }
 
 function useMe() {
@@ -153,11 +163,38 @@ function useMe() {
   })
 }
 
+let clockSnapshot = Date.now()
+let clockTimer: number | undefined
+const clockSubscribers = new Set<() => void>()
+
+function subscribeToClock(onChange: () => void) {
+  clockSubscribers.add(onChange)
+  if (clockTimer === undefined) {
+    clockTimer = window.setInterval(() => {
+      clockSnapshot = Date.now()
+      clockSubscribers.forEach((subscriber) => subscriber())
+    }, 1000)
+  }
+  return () => {
+    clockSubscribers.delete(onChange)
+    if (clockSubscribers.size === 0 && clockTimer !== undefined) {
+      window.clearInterval(clockTimer)
+      clockTimer = undefined
+    }
+  }
+}
+
+function getClockSnapshot() {
+  return clockSnapshot
+}
+
 function HomePage() {
   const motorcyclesQuery = useMotorcycles()
   const auctionsQuery = useAuctions()
+  const now = useSyncExternalStore(subscribeToClock, getClockSnapshot, getClockSnapshot)
   const featured = motorcyclesQuery.data?.slice(0, 3) ?? []
   const liveAuctions = auctionsQuery.data?.filter((auction) => auction.status === 'LIVE') ?? []
+  const featuredLiveAuction = liveAuctions[0]
 
   return (
     <div className="space-y-10">
@@ -173,20 +210,38 @@ function HomePage() {
             </p>
             <div className="mt-6 flex gap-4">
               <Link to="/auctions" className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-slate-950">View auctions</Link>
-              <Link to="/login" className="rounded-xl border border-slate-700 px-5 py-3 font-semibold text-white">Login</Link>
             </div>
           </div>
           <div className="rounded-3xl bg-gradient-to-br from-emerald-500/30 via-slate-800 to-blue-500/10 p-6">
             <div className="rounded-2xl bg-slate-950/60 p-5 shadow-xl">
               <div className="flex items-center justify-between text-sm text-slate-300">
                 <span>Live bidding</span>
-                <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-emerald-300">LIVE</span>
+                <span className={`rounded-full px-2 py-1 ${featuredLiveAuction ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-300'}`}>
+                  {featuredLiveAuction ? 'LIVE' : 'NO LIVE AUCTION'}
+                </span>
               </div>
-              <h2 className="mt-3 text-3xl font-bold text-white">Kawasaki Ninja 650</h2>
+              <h2 className="mt-3 text-3xl font-bold text-white">
+                {featuredLiveAuction?.motorcycle.title ?? 'Auctions are coming soon'}
+              </h2>
               <div className="mt-5 grid grid-cols-2 gap-3 text-sm text-slate-300">
-                <div className="rounded-xl bg-slate-800 p-3"><div className="text-slate-400">Current bid</div><div className="mt-2 font-semibold text-white">₹4,500</div></div>
-                <div className="rounded-xl bg-slate-800 p-3"><div className="text-slate-400">Time left</div><div className="mt-2 font-semibold text-white">06h 12m</div></div>
+                <div className="rounded-xl bg-slate-800 p-3">
+                  <div className="text-slate-400">Current bid</div>
+                  <div className="mt-2 font-semibold text-white">
+                    {featuredLiveAuction ? formatMoney(featuredLiveAuction.current_price) : '—'}
+                  </div>
+                </div>
+                <div className="rounded-xl bg-slate-800 p-3">
+                  <div className="text-slate-400">Time left</div>
+                  <div className="mt-2 font-semibold text-white">
+                    {featuredLiveAuction ? formatTimeRemaining(featuredLiveAuction.end_time, now) : '—'}
+                  </div>
+                </div>
               </div>
+              {featuredLiveAuction && (
+                <Link to={`/auctions/${featuredLiveAuction.id}`} className="mt-4 inline-block text-sm font-semibold text-emerald-300">
+                  View live auction
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -247,6 +302,42 @@ function HomePage() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="developer-heading"
+        className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl"
+      >
+        <div className="grid md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:items-center">
+          <div className="flex justify-center bg-gradient-to-br from-slate-100 via-emerald-50 to-slate-200 p-8 sm:p-10 md:h-full md:p-12">
+            <img
+              src="/images/akash-kumar-singh.jpg"
+              alt="Akash Kumar Singh, developer of BikeBid"
+              className="aspect-square w-56 rounded-3xl border-4 border-white object-cover shadow-xl transition-transform duration-300 hover:scale-[1.02] sm:w-64 md:w-full md:max-w-sm"
+            />
+          </div>
+          <div className="p-6 sm:p-10 md:p-12">
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-emerald-700">
+              Meet the developer
+            </p>
+            <h2 id="developer-heading" className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+              Akash Kumar Singh
+            </h2>
+            <p className="mt-2 text-lg font-semibold text-slate-600">Developer of BikeBid</p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+              Designed and developed BikeBid, a modern motorcycle auction platform that connects buyers with exciting motorcycle auctions through a seamless, secure, and real-time bidding experience.
+            </p>
+            <a
+              href="https://akashraajputh.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-600"
+            >
+              Visit My Portfolio
+              <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
+            </a>
+          </div>
         </div>
       </section>
     </div>
@@ -1059,6 +1150,9 @@ function AppShell() {
           <Route path="/my-auctions" element={<MyAuctionsPage />} />
         </Routes>
       </main>
+      <footer className="border-t border-slate-200 bg-white px-4 py-5 text-center text-sm text-slate-500">
+        © BikeBid. All rights reserved to @BikeBid 2026.
+      </footer>
     </div>
   )
 }

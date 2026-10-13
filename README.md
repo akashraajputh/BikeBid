@@ -18,28 +18,47 @@ backend/
 
 ## Local setup
 
-The workspace `.env` is configured for PostgreSQL with the requested asyncpg URL. For a fresh checkout, copy `.env.example` to `.env` and update its database connection values to match your local Postgres setup.
+The root `.env` file configures PostgreSQL for the backend. For a fresh checkout, copy `.env.example` to `.env` and update its database connection values to match your local Postgres setup. The backend loads this file from the workspace root; run backend commands from `backend/`.
 
 The local `.env` is ignored by Git. Do not place database passwords or production secrets in tracked files.
 
-Start PostgreSQL with `docker compose up -d`. On a new database, run the migrations from `backend/` before starting the API:
+Install the backend dependencies once:
 
 ```powershell
+cd backend
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Start PostgreSQL from the workspace root:
+
+```powershell
+cd ..
+docker compose up -d
+```
+
+For a new PostgreSQL database, apply migrations before starting the API. In a backend terminal:
+
+```powershell
+cd backend
 .\.venv\Scripts\alembic.exe upgrade head
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-From `frontend/`, install dependencies and start Vite:
+In a separate terminal, install frontend dependencies once and start Vite:
 
 ```powershell
+cd frontend
 npm install
-npm run dev
+npm run dev -- --host 127.0.0.1
 ```
 
-Pytest defaults to an isolated async SQLite test database (`backend/bikebid_test.db`) so test runs do not mutate the configured PostgreSQL database. To select another test database explicitly:
+Open the frontend at <http://127.0.0.1:5173>. Backend liveness is available at <http://127.0.0.1:8000/health/live>; database readiness is available at <http://127.0.0.1:8000/api/v1/health>.
+
+Pytest defaults to an isolated async SQLite test database (`backend/bikebid_test.db`) so test runs do not mutate the configured PostgreSQL database. Run tests from `backend/`:
 
 ```powershell
-$env:DATABASE_URL = "sqlite+aiosqlite:///./bikebid_test.db"
+cd backend
 .\.venv\Scripts\python.exe -m pytest
 ```
 
