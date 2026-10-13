@@ -1,12 +1,25 @@
 import os
+from urllib.parse import quote
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
+def _database_url() -> str:
+    database_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./bikebid.db")
+    password_placeholder = "${AIVEN_PASSWORD}"
+    password = os.getenv("AIVEN_PASSWORD")
+    if password_placeholder in database_url and password is not None:
+        database_url = database_url.replace(
+            password_placeholder,
+            quote(password, safe=""),
+        )
+    return database_url
+
+
 class Settings:
-    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./bikebid.db")
+    DATABASE_URL = _database_url()
     AUTO_CREATE_SCHEMA = os.getenv(
         "AUTO_CREATE_SCHEMA",
         DATABASE_URL.startswith("sqlite+aiosqlite:"),
