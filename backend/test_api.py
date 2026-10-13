@@ -13,6 +13,20 @@ def test_healthcheck():
         assert response.json()['status'] == 'ok'
 
 
+def test_render_frontend_can_call_api():
+    with TestClient(app) as client:
+        response = client.options(
+            '/api/v1/motorcycles',
+            headers={
+                'Origin': 'https://bikebid.onrender.com',
+                'Access-Control-Request-Method': 'GET',
+                'Access-Control-Request-Headers': 'authorization,content-type',
+            },
+        )
+        assert response.status_code == 200
+        assert response.headers['access-control-allow-origin'] == 'https://bikebid.onrender.com'
+
+
 def test_register_and_login():
     with TestClient(app) as client:
         suffix = uuid4().hex[:10]
