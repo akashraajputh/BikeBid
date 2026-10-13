@@ -91,7 +91,7 @@ type AuthState = {
   user: User
 }
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8000' : '')).replace(/\/+$/, '')
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'https://bikebidbackend.onrender.com/' : '')).replace(/\/+$/, '')
 const queryClient = new QueryClient()
 
 function getAuth(): AuthState | null {
