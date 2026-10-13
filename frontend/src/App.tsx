@@ -348,8 +348,8 @@ function HomePage() {
 }
 
 function LoginPage() {
-  const [email, setEmail] = useState('admin@bikebid.com')
-  const [password, setPassword] = useState('Admin123!')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
   async function submit(event: React.FormEvent) {
@@ -369,15 +369,15 @@ function LoginPage() {
   return (
     <div className="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
       <h2 className="text-3xl font-bold text-slate-900">Login</h2>
-      <p className="mt-2 text-sm text-slate-600">Use the demo admin or create a buyer account.</p>
+      <p className="mt-2 text-sm text-slate-600">Sign in to your BikeBid account.</p>
       <form onSubmit={submit} className="mt-6 space-y-4">
         <label className="block">
           <span className="mb-1 block text-sm font-medium text-slate-700">Email</span>
-          <input value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2" />
+          <input type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2" />
         </label>
         <label className="block">
           <span className="mb-1 block text-sm font-medium text-slate-700">Password</span>
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2" />
+          <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2" />
         </label>
         {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
         <button type="submit" className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white">Sign in</button>
