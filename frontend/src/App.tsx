@@ -1,7 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { BrowserRouter, Link, Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, LayoutDashboard, ShieldCheck } from 'lucide-react'
+import { ArrowRight, LayoutDashboard, Menu, ShieldCheck, X } from 'lucide-react'
 
 type User = {
   id: number
@@ -1100,6 +1100,10 @@ function AuctionDetailRoute() {
 function AppShell() {
   const auth = getAuth()
   const user = auth?.user
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const closeMobileMenu = () => setMobileMenuOpen(false)
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -1110,21 +1114,21 @@ function AppShell() {
             <span>BikeBid</span>
           </Link>
           <nav className="hidden gap-6 md:flex">
-            <NavLink to="/" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Home</NavLink>
-            <NavLink to="/auctions" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Auctions</NavLink>
-            {user && <NavLink to="/dashboard" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Dashboard</NavLink>}
-            {user?.role === 'buyer' && <NavLink to="/my-bids" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>My bids</NavLink>}
-            {user?.role === 'buyer' && <NavLink to="/my-auctions" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>My auctions</NavLink>}
+            <NavLink to="/" className={navLinkClass}>Home</NavLink>
+            <NavLink to="/auctions" className={navLinkClass}>Auctions</NavLink>
+            {user && <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>}
+            {user?.role === 'buyer' && <NavLink to="/my-bids" className={navLinkClass}>My bids</NavLink>}
+            {user?.role === 'buyer' && <NavLink to="/my-auctions" className={navLinkClass}>My auctions</NavLink>}
             {user?.role === 'admin' && (
               <>
-                <NavLink to="/admin" end className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Admin overview</NavLink>
-                <NavLink to="/admin/motorcycles" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Motorcycles</NavLink>
-                <NavLink to="/admin/auctions" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Auctions</NavLink>
-                <NavLink to="/admin/users" className={({ isActive }) => (isActive ? 'text-slate-900 font-semibold' : 'text-slate-600')}>Users</NavLink>
+                <NavLink to="/admin" end className={navLinkClass}>Admin overview</NavLink>
+                <NavLink to="/admin/motorcycles" className={navLinkClass}>Motorcycles</NavLink>
+                <NavLink to="/admin/auctions" className={navLinkClass}>Auctions</NavLink>
+                <NavLink to="/admin/users" className={navLinkClass}>Users</NavLink>
               </>
             )}
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
             {!user ? (
               <>
                 <Link to="/login" className="rounded-xl border border-slate-300 px-4 py-2 font-semibold text-slate-700">Login</Link>
@@ -1134,7 +1138,44 @@ function AppShell() {
               <button onClick={() => { setAuth(null); window.location.href = '/' }} className="rounded-xl border border-slate-300 px-4 py-2 font-semibold text-slate-700">Logout</button>
             )}
           </div>
+          <button
+            type="button"
+            className="rounded-xl border border-slate-300 p-2 text-slate-700 md:hidden"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
         </div>
+        {mobileMenuOpen && (
+          <nav id="mobile-navigation" aria-label="Mobile navigation" className="space-y-1 border-t border-slate-200 px-4 py-3 md:hidden">
+            <NavLink to="/" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>Home</NavLink>
+            <NavLink to="/auctions" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>Auctions</NavLink>
+            {user && <NavLink to="/dashboard" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>Dashboard</NavLink>}
+            {user?.role === 'buyer' && <NavLink to="/my-bids" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>My bids</NavLink>}
+            {user?.role === 'buyer' && <NavLink to="/my-auctions" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>My auctions</NavLink>}
+            {user?.role === 'admin' && (
+              <>
+                <NavLink to="/admin" end onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>Admin overview</NavLink>
+                <NavLink to="/admin/motorcycles" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>Motorcycles</NavLink>
+                <NavLink to="/admin/auctions" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>Auctions</NavLink>
+                <NavLink to="/admin/users" onClick={closeMobileMenu} className={({ isActive }) => `${navLinkClass({ isActive })} block rounded-lg px-3 py-2`}>Users</NavLink>
+              </>
+            )}
+            <div className="flex gap-2 border-t border-slate-200 pt-3">
+              {!user ? (
+                <>
+                  <Link to="/login" onClick={closeMobileMenu} className="rounded-xl border border-slate-300 px-4 py-2 font-semibold text-slate-700">Login</Link>
+                  <Link to="/register" onClick={closeMobileMenu} className="rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white">Register</Link>
+                </>
+              ) : (
+                <button onClick={() => { setAuth(null); window.location.href = '/' }} className="rounded-xl border border-slate-300 px-4 py-2 font-semibold text-slate-700">Logout</button>
+              )}
+            </div>
+          </nav>
+        )}
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8">
         <Routes>

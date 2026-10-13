@@ -70,7 +70,7 @@ async def seed_demo_data() -> None:
                 location="Pune",
                 start_price=Decimal("3100.00"),
                 reserve_price=Decimal("3500.00"),
-                image_urls=["https://images.unsplash.com/photo-1571068316344-75bc9d0d90d1?auto=format&fit=crop&w=1200&q=80"],
+                image_urls=["https://cloudfront-us-east-1.images.arcpublishing.com/octane/ZMQQLREHYJAJJDLXF3VH6VN7WU.jpg"],
                 seller_id=admin.id,
             ),
             Motorcycle(
